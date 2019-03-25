@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  *         final UserModel viewModel = ViewModelProviders.of(this).get(UserModel.class);
  *
- *         viewModel.userLiveData.observer(this, new Observer<User>() {
+ *         viewModel.getUser().observe(this, new Observer<User>() {
  *            {@literal @}Override
  *             public void onChanged(@Nullable User data) {
  *                 // update ui.

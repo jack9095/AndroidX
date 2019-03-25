@@ -2,9 +2,13 @@ package com.example.myapplication;
 
 import android.os.Bundle;
 
+import com.example.myapplication.app.LogUtil;
 import com.example.myapplication.viewmodel.MainViewModel;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -17,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
         ViewModelProvider.AndroidViewModelFactory factory = ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication());
 
         // Activity 中创建 ViewModel
-//        MainViewModel mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+//        MainViewModel activityViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         // fragment 中创建 ViewModel
 //        MainViewModel fragmentViewModel = ViewModelProviders.of(fragment).get(MainViewModel.class);
@@ -33,5 +37,13 @@ public class MainActivity extends AppCompatActivity {
 
         // 第二步:使用 ViewModelProvider 反射创建需要的 ViewModel
         MainViewModel mainViewModel = viewModelProvider.get(MainViewModel.class);
+        mainViewModel.setData();
+        mainViewModel.getLiveData().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String data) {
+                // update ui.
+                LogUtil.e("data = " + data);
+            }
+        });
     }
 }
