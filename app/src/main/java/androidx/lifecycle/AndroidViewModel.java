@@ -2,7 +2,6 @@ package androidx.lifecycle;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 
 /**

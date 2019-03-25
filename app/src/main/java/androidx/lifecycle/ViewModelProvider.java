@@ -8,47 +8,36 @@ import androidx.annotation.NonNull;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * An utility class that provides {@code ViewModels} for a scope.
- * <p>
- * Default {@code ViewModelProvider} for an {@code Activity} or a {@code Fragment} can be obtained
- * from {@link androidx.lifecycle.ViewModelProviders} class.
+ * ViewModelProvider 是每次获取创建 ViewModel 的时候都会创建一个新的
  */
 @SuppressWarnings("WeakerAccess")
 public class ViewModelProvider {
 
-    private static final String DEFAULT_KEY =
-            "androidx.lifecycle.ViewModelProvider.DefaultKey";
+    private static final String DEFAULT_KEY = "androidx.lifecycle.ViewModelProvider.DefaultKey";
 
     /**
-     * Implementations of {@code Factory} interface are responsible to instantiate ViewModels.
+     * Factory 接口的实现负责实例化 ViewModels。
      */
     public interface Factory {
         /**
-         * Creates a new instance of the given {@code Class}.
-         * <p>
+         * 创建给定 @code Class 类的新实例
          *
-         * @param modelClass a {@code Class} whose instance is requested
-         * @param <T>        The type parameter for the ViewModel.
-         * @return a newly created ViewModel
+         * @param modelClass 新实例的 class
+         * @param <T>        ViewModel 类型的泛型参数.
+         * @return 返回新创建的 ViewModel
          */
         @NonNull
         <T extends ViewModel> T create(@NonNull Class<T> modelClass);
     }
 
     /**
-     * Implementations of {@code Factory} interface are responsible to instantiate ViewModels.
-     * <p>
-     * This is more advanced version of {@link Factory} that receives a key specified for requested
-     * {@link ViewModel}.
+     * factory 接口的实现负责实例化 ViewModels。
+     * 这是 factory 的更高级版本，它接收为请求指定的密钥
      */
     abstract static class KeyedFactory implements Factory {
         /**
-         * Creates a new instance of the given {@code Class}.
-         *
-         * @param key a key associated with the requested ViewModel
-         * @param modelClass a {@code Class} whose instance is requested
-         * @param <T>        The type parameter for the ViewModel.
-         * @return a newly created ViewModel
+         * @param key a key  在 ViewModelStore 存储的 ViewModel 的 key
+         * @return 实例化对应的 ViewModel
          */
         @NonNull
         public abstract <T extends ViewModel> T create(@NonNull String key,
@@ -66,43 +55,21 @@ public class ViewModelProvider {
     private final ViewModelStore mViewModelStore;
 
     /**
-     * Creates {@code ViewModelProvider}, which will create {@code ViewModels} via the given
-     * {@code Factory} and retain them in a store of the given {@code ViewModelStoreOwner}.
-     *
-     * @param owner   a {@code ViewModelStoreOwner} whose {@link ViewModelStore} will be used to
-     *                retain {@code ViewModels}
-     * @param factory a {@code Factory} which will be used to instantiate
-     *                new {@code ViewModels}
+     * @param owner   ViewModelStore 用于保存 ViewModels
+     * @param factory Factory 用于创建新的 ViewModels
      */
     public ViewModelProvider(@NonNull ViewModelStoreOwner owner, @NonNull Factory factory) {
         this(owner.getViewModelStore(), factory);
     }
 
-    /**
-     * Creates {@code ViewModelProvider}, which will create {@code ViewModels} via the given
-     * {@code Factory} and retain them in the given {@code store}.
-     *
-     * @param store   {@code ViewModelStore} where ViewModels will be stored.
-     * @param factory factory a {@code Factory} which will be used to instantiate
-     *                new {@code ViewModels}
-     */
     public ViewModelProvider(@NonNull ViewModelStore store, @NonNull Factory factory) {
         mFactory = factory;
         mViewModelStore = store;
     }
 
     /**
-     * Returns an existing ViewModel or creates a new one in the scope (usually, a fragment or
-     * an activity), associated with this {@code ViewModelProvider}.
-     * <p>
-     * The created ViewModel is associated with the given scope and will be retained
-     * as long as the scope is alive (e.g. if it is an activity, until it is
-     * finished or process is killed).
-     *
-     * @param modelClass The class of the ViewModel to create an instance of it if it is not
-     *                   present.
-     * @param <T>        The type parameter for the ViewModel.
-     * @return A ViewModel that is an instance of the given type {@code T}.
+     * 创建一个ViewModelProvider，使用 ViewModelProvider 内部的全局单例 AndroidViewModelFactory 来反射创建 ViewModel,并把创建的ViewModel存入传入的ViewModelStore中！
+     * @param modelClass ViewModel 的子类的 class
      */
     @NonNull
     @MainThread
@@ -111,29 +78,16 @@ public class ViewModelProvider {
         if (canonicalName == null) {
             throw new IllegalArgumentException("Local and anonymous classes can not be ViewModels");
         }
+        // ViewModelStore 存储 ViewModel key 的获取：  DEFAULT_KEY 和 类名组成一个key值
         return get(DEFAULT_KEY + ":" + canonicalName, modelClass);
     }
 
-    /**
-     * Returns an existing ViewModel or creates a new one in the scope (usually, a fragment or
-     * an activity), associated with this {@code ViewModelProvider}.
-     * <p>
-     * The created ViewModel is associated with the given scope and will be retained
-     * as long as the scope is alive (e.g. if it is an activity, until it is
-     * finished or process is killed).
-     *
-     * @param key        The key to use to identify the ViewModel.
-     * @param modelClass The class of the ViewModel to create an instance of it if it is not
-     *                   present.
-     * @param <T>        The type parameter for the ViewModel.
-     * @return A ViewModel that is an instance of the given type {@code T}.
-     */
     @NonNull
     @MainThread
     public <T extends ViewModel> T get(@NonNull String key, @NonNull Class<T> modelClass) {
-        ViewModel viewModel = mViewModelStore.get(key);
+        ViewModel viewModel = mViewModelStore.get(key); // 先从缓存中获取
 
-        if (modelClass.isInstance(viewModel)) {
+        if (modelClass.isInstance(viewModel)) {  // 缓存有就直接返回，否则就用 Factory 从新创建
             //noinspection unchecked
             return (T) viewModel;
         } else {
@@ -145,15 +99,15 @@ public class ViewModelProvider {
         if (mFactory instanceof KeyedFactory) {
             viewModel = ((KeyedFactory) (mFactory)).create(key, modelClass);
         } else {
-            viewModel = (mFactory).create(modelClass);
+            viewModel = (mFactory).create(modelClass); // 创建对应的 viewModel
         }
-        mViewModelStore.put(key, viewModel);
+        mViewModelStore.put(key, viewModel);  // 把创建好的 viewModel 存储到 ViewModelStore 的 HashMap 的 put 方法中
         //noinspection unchecked
         return (T) viewModel;
     }
 
     /**
-     * Simple factory, which calls empty constructor on the give class.
+     * Simple factory, which calls empty constructor on the give class.  简单工厂，它在给定类上调用空构造函数
      */
     public static class NewInstanceFactory implements Factory {
 
@@ -173,19 +127,13 @@ public class ViewModelProvider {
     }
 
     /**
-     * {@link Factory} which may create {@link AndroidViewModel} and
-     * {@link ViewModel}, which have an empty constructor.
+     * AndroidViewModelFactory 在正常情况下是全局单例只有一个，只是一个反射创建对象的工具类
      */
     public static class AndroidViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
         private static AndroidViewModelFactory sInstance;
 
-        /**
-         * Retrieve a singleton instance of AndroidViewModelFactory.
-         *
-         * @param application an application to pass in {@link AndroidViewModel}
-         * @return A valid {@link AndroidViewModelFactory}
-         */
+        // 获得 AndroidViewModelFactory 单例
         @NonNull
         public static AndroidViewModelFactory getInstance(@NonNull Application application) {
             if (sInstance == null) {
@@ -196,11 +144,7 @@ public class ViewModelProvider {
 
         private Application mApplication;
 
-        /**
-         * Creates a {@code AndroidViewModelFactory}
-         *
-         * @param application an application to pass in {@link AndroidViewModel}
-         */
+        // 构造方式是 public 的，是可以 new 一个 AndroidViewModelFactory 出来的
         public AndroidViewModelFactory(@NonNull Application application) {
             mApplication = application;
         }
@@ -211,6 +155,7 @@ public class ViewModelProvider {
             if (AndroidViewModel.class.isAssignableFrom(modelClass)) {
                 //noinspection TryWithIdenticalCatches
                 try {
+                    // 创建ViewModel的关键地方，根据给出的Class反射创建需要的ViewModel
                     return modelClass.getConstructor(Application.class).newInstance(mApplication);
                 } catch (NoSuchMethodException e) {
                     throw new RuntimeException("Cannot create an instance of " + modelClass, e);

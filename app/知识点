@@ -1,0 +1,29 @@
+1.ViewModel为什么可以实现旋转屏幕不销毁？
+
+答：ViewModel的创建获取方式是： 为 Activity 或者 Fragment 创建一个 ViewModelStore，获取到 AndroidViewModelFactory 单例，
+    用这个两个数据创建一个 ViewModelProvider,在创建 ViewModelProvider 中可以 get 我们要的 ViewModel。
+
+5.一句话总结 ViewModel 的创建？
+ 答：ViewModel 创建一句话总结：https://upload-images.jianshu.io/upload_images/1813550-c0dff4d120123993.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240
+   这句创建总结其实也说明了 ViewModel 的存储。
+   进一步解释：
+   ViewModel 是存储在当前 Activity 或者 Fragment 的 HolderFragment 中的 ViewModelStore 的 HashMap 中，
+   我们可以get, put 或者在 Activity 或者 Fragment 销毁的时候 HolderFragment 会跟随销毁，在 HolderFragment 的 onDestroy 方法中调用 mViewModelStore 的 clear 方法。
+   HolderFragment 伴随销毁时调用自己所有 ViewModel 的 onCleared 方法：https://upload-images.jianshu.io/upload_images/1813550-db43163bf333b8ae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240
+
+
+总结：
+ 1.ViewModel 以键值对的形式存在 Activity 或者 Fragment 的 ViewModelStore 的 HashMap 中。
+
+ 2.一个 Activity 或者 Fragment 可以有很多个 ViewModel。
+
+ 3.因为 ViewModel 是以 Activity 或者 Fragment 为存在基础，所以 ViewModel 可以在当前 Activity 和 Fragment 中实现数据共享，前提是传入相同的 key 值。
+
+
+
+
+
+
+
+
+
