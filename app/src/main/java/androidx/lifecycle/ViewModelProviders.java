@@ -85,8 +85,7 @@ public class ViewModelProviders {
      */
     @NonNull
     @MainThread
-    public static ViewModelProvider of(@NonNull FragmentActivity activity,
-                                       @Nullable Factory factory) {
+    public static ViewModelProvider of(@NonNull FragmentActivity activity, @Nullable Factory factory) {
         Application application = checkApplication(activity);
         if (factory == null) {
             // 获取默认的单例 AndroidViewModelFactory，它内部是通过反射来创建具体的 ViewModel

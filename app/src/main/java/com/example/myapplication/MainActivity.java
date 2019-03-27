@@ -1,11 +1,10 @@
 package com.example.myapplication;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.FrameLayout;
 
-import com.example.myapplication.app.LogUtil;
 import com.example.myapplication.viewmodel.MainViewModel;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -13,12 +12,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 public class MainActivity extends AppCompatActivity {
-
+    private final static String TAG = MainActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ViewModelProvider.AndroidViewModelFactory factory = ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication());
+        Log.w(TAG,"*********  onCreate  ********");
+
+//        ViewModelProvider.AndroidViewModelFactory factory = ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication());
 
         // Activity 中创建 ViewModel
 //        MainViewModel activityViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
@@ -42,8 +43,63 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable String data) {
                 // update ui.
-                LogUtil.e("data = " + data);
+//                Log.e("data = " + data);
             }
         });
+
+        initView();
+    }
+
+    private void initView() {
+        TestFragment mTestFragment = new TestFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.frame_layout,mTestFragment).commit();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.w(TAG,"*********  onCreate  ********");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.w(TAG,"*********  onResume  ********");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.w(TAG,"*********  onPause  ********");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.w(TAG,"*********  onPause  ********");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.w(TAG,"*********  onSaveInstanceState  ********");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.w(TAG,"*********  onDestroy  ********");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.w(TAG,"*********  onRestart  ********");
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.w(TAG,"*********  onRestart  ********");
     }
 }
